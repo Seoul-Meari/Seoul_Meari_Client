@@ -6,6 +6,11 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
+*.apk
+*.aab
+*.app
+*.exe
+*.dylib
 
 # Visual Studio / Rider
 /[Ee]xported[Oo]bj/
