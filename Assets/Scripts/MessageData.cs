@@ -2,15 +2,20 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-[System.Serializable] // Inspector 창에서 보이게 함
+[System.Serializable]
 public class MessageData
 {
     public string content;    // 메시지 내용
-    public Vector3 position;  // 메시지가 나타날 위치 (AR 공간 좌표)
-    public double latitude;
-    public double longitude;
-    public MessageData(string content)
+    public double latitude;   // 위도
+    public double longitude;  // 경도
+    public float? z;          // 고도 (Nullable, 값이 없을 수 있음)
+
+    // 생성자 수정
+    public MessageData(string content, double latitude, double longitude, float? z = null)
     {
         this.content = content;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.z = z;
     }
 }

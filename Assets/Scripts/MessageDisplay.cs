@@ -9,4 +9,9 @@ public class MessageDisplay : MonoBehaviour
     {
         contentText.text = data.content;
     }
+
+    void Start()
+    {
+        transform.rotation = Quaternion.LookRotation(transform.position - Camera.main.transform.position);
+    }
 }
