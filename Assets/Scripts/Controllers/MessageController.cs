@@ -46,7 +46,7 @@ public class AppController : MonoBehaviour
                 messageSpawner.SpawnMessage(msg);
             }
         }
-        
+
         // 사라져야 할 메시지들을 숨김
         foreach (var msg in messagesToHide)
         {
