@@ -21,12 +21,19 @@ public class MessageManager : MonoBehaviour
 
     private bool isGpsInitialized = false;
 
+    public TMP_Text gpsShow;
+    // --- GPS 보정을 위한 변수 추가 ---
+    [Tooltip("GPS 보정 강도입니다. 0에 가까울수록 부드러워지지만 반응이 느려집니다. (추천값: 0.1)")]
+    public float smoothingFactor = 0.1f;
+    private Vector2 smoothedPosition; // 부드럽게 보정된 2D 위치 (위도, 경도)
+    private bool isFirstUpdate = true; // 첫 GPS 업데이트인지 확인
+
     void Awake()
     {
         // 사용자님의 현재 위치를 기준으로 가까운 곳에 메시지를 배치하도록 좌표를 수정했습니다.
         // 이제 앱을 켜면 바로 주변에 메시지들이 보일 것입니다.
-        double currentUserLat = 35.18698;
-        double currentUserLon = 129.07400;
+        double currentUserLat = 35.18713;
+        double currentUserLon = 129.07420;
 
         // 1. 북쪽 약 11미터 지점
         allMessages.Add(new MessageData("북쪽 메시지", currentUserLat + 0.00001, currentUserLon, 1.5f));
@@ -40,6 +47,28 @@ public class MessageManager : MonoBehaviour
         // 4. 조금 먼 곳 (약 30미터 북쪽) - 테스트용
         // 이 메시지는 viewingDistance를 30 이상으로 늘려야 보입니다.
         allMessages.Add(new MessageData("조금 먼 북쪽 메시지", currentUserLat + 0.00027, currentUserLon, 2.0f));
+
+        int messageCount = 50;
+        double step = 0.000001; // 위도/경도 약 0.5m 간격
+        int gridSize = (int)Mathf.Ceil(Mathf.Sqrt(messageCount)); // √50 ≈ 7 → 7x7 격자
+
+        int index = 1;
+        for (int i = 0; i < gridSize; i++)
+        {
+            for (int j = 0; j < gridSize; j++)
+            {
+                if (index > messageCount) break;
+
+                double lat = currentUserLat + (i - gridSize / 2) * step;
+                double lon = currentUserLon + (j - gridSize / 2) * step;
+
+                string name = $"주변 메시지 {index}";
+                float height = UnityEngine.Random.Range(0.5f, 2.0f); // 0.5~2m 랜덤 높이
+
+                allMessages.Add(new MessageData(name, lat, lon, height));
+                index++;
+            }
+        }
     }
 
     IEnumerator Start()
@@ -88,45 +117,58 @@ public class MessageManager : MonoBehaviour
     {
         while (true)
         {
-            // 현재 내 위치
+            // 1. 현재 GPS의 실제(Raw) 위치를 가져옴
             LocationInfo currentUserLocation = Input.location.lastData;
+            Vector2 currentRawPosition = new Vector2(currentUserLocation.latitude, currentUserLocation.longitude);
+            gpsShow.text = $"X: {currentUserLocation.latitude} Y: {currentUserLocation.longitude}";
 
-            // --- 1. 보여줘야 할 메시지 스캔 ---
+            // 2. GPS 위치 보정 (Smoothing)
+            if (isFirstUpdate)
+            {
+                // 첫 업데이트일 경우, 보정 없이 현재 위치를 바로 사용
+                smoothedPosition = currentRawPosition;
+                isFirstUpdate = false;
+            }
+            else
+            {
+                // 이전 보정 위치와 현재 실제 위치 사이를 부드럽게 이동
+                // Vector2.Lerp를 사용하여 간단한 이동 평균 필터를 구현
+                smoothedPosition = Vector2.Lerp(smoothedPosition, currentRawPosition, smoothingFactor);
+            }
+
+            // --- 3. 보여줘야 할 메시지 스캔 (보정된 위치 기준) ---
+            // 이제 모든 계산은 currentUserLocation 대신 보정된 smoothedPosition을 사용합니다.
             foreach (var messageData in allMessages)
             {
-                // 내 위치와 메시지 데이터 사이의 거리 계산 (미터 단위)
-                float distance = CalculateDistance(currentUserLocation.latitude, currentUserLocation.longitude, messageData.latitude, messageData.longitude);
+                float distance = CalculateDistance(smoothedPosition.x, smoothedPosition.y, messageData.latitude, messageData.longitude);
 
-                // 거리가 가시 반경 안에 있고, 아직 화면에 없는 메시지라면
                 if (distance <= viewingDistance && !activeMessages.ContainsKey(messageData))
                 {
-                    // 이 메시지를 AR 공간에 생성!
+                    // SpawnMessage 함수에 실제 위치 정보(currentUserLocation)를 넘겨주는 것은 그대로 둡니다.
+                    // 메시지 생성 위치 계산은 여전히 '순간적인' 실제 위치를 기준으로 하는 것이 더 정확할 수 있습니다.
                     SpawnMessage(messageData, currentUserLocation);
                 }
             }
 
-            // --- 2. 숨겨야 할 메시지 스캔 ---
+            // --- 4. 숨겨야 할 메시지 스캔 (보정된 위치 기준) ---
             List<MessageData> messagesToHide = new List<MessageData>();
             foreach (var activePair in activeMessages)
             {
                 MessageData messageData = activePair.Key;
-                float distance = CalculateDistance(currentUserLocation.latitude, currentUserLocation.longitude, messageData.latitude, messageData.longitude);
+                float distance = CalculateDistance(smoothedPosition.x, smoothedPosition.y, messageData.latitude, messageData.longitude);
 
-                // 거리가 가시 반경을 벗어난 메시지라면
                 if (distance > viewingDistance)
                 {
-                    // 숨길 목록에 추가
                     messagesToHide.Add(messageData);
                 }
             }
             
-            // 목록에 있는 메시지들을 실제로 파괴
             foreach (var messageData in messagesToHide)
             {
                 HideMessage(messageData);
             }
 
-            // 1초마다 한번씩 체크 (배터리 절약)
+            // 1초마다 한번씩 체크
             yield return new WaitForSeconds(1.0f);
         }
     }
