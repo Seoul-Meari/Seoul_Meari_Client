@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/AR_Test.unity
+    path: Assets/Scenes/Seoul_Meari.unity
     guid: e0ddd687a151b4893bd09ef4548736c0
   m_configObjects:
     Niantic.Lightship.AR.LightshipSettings: {fileID: 11400000, guid: 6867876b111fc406aaa448f5fd49b67f, type: 2}
