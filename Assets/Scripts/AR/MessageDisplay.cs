@@ -7,7 +7,7 @@ public class MessageDisplay : MonoBehaviour
 
     public void Setup(MessageData data)
     {
-        contentText.text = data.content;
+        contentText.text = MessageColoring.MessageWithColor(data.content, "#000000");
     }
 
     void Start()
