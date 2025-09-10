@@ -10,7 +10,6 @@ public class AppController : MonoBehaviour
     public float viewingDistance = 20.0f;
 
     // Unity 인스펙터 창에서 각 스크립트 컴포넌트를 드래그하여 연결해줘야 합니다.
-    public GpsService gpsService;
     public MessageRepository messageRepository;
     public MessageSpawner messageSpawner;
     private List<MessageData> messagesCurrentlyVisible = new List<MessageData>();
@@ -18,22 +17,25 @@ public class AppController : MonoBehaviour
     void Start()
     {
         // GpsService의 위치 업데이트 이벤트가 발생하면 UpdateVisibleMessages 함수를 호출하도록 등록
-        gpsService.OnLocationUpdated.AddListener(UpdateVisibleMessages);
+        if (GpsService.Instance != null)
+        {
+            GpsService.Instance.OnLocationUpdated.AddListener(UpdateVisibleMessages);
+        }
     }
 
     private void OnDestroy()
     {
         // 오브젝트 파괴 시 이벤트 리스너를 안전하게 제거
-        if (gpsService != null)
+        if (GpsService.Instance != null)
         {
-            gpsService.OnLocationUpdated.RemoveListener(UpdateVisibleMessages);
+            GpsService.Instance.OnLocationUpdated.RemoveListener(UpdateVisibleMessages);
         }
     }
 
-    // GPS 위치가 바뀔 때마다 GpsService에 의해 자동으로 호출될 함수
+    // GPS 위치가 바뀔 때마다 GpsService.Instance에 의해 자동으로 호출될 함수
     private void UpdateVisibleMessages(Vector2 currentGpsPosition)
     {
-        if (!gpsService.IsInitialized) return;
+        if (!GpsService.Instance.IsInitialized) return;
 
         List<MessageData> messagesToShow = messageRepository.GetMessagesNear(currentGpsPosition, viewingDistance);
         List<MessageData> messagesToHide = messagesCurrentlyVisible.Except(messagesToShow).ToList();

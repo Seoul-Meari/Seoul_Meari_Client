@@ -9,7 +9,6 @@ public class Bootstrapper : MonoBehaviour
     [Header("Loading UI")]
     [SerializeField] private Canvas loadingCanvas; // Canvas 컴포넌트
     [SerializeField] private GameObject progressSpinner;   // 0~1
-    [SerializeField] private TMP_Text title;
 
     [Header("Next Scene")]
     [SerializeField] private string firstSceneName = "MainScene";
@@ -29,7 +28,6 @@ public class Bootstrapper : MonoBehaviour
             loadingCanvas.gameObject.SetActive(true); // ✅ GameObject 활성화
             loadingCanvas.enabled = true;              // 렌더 활성화
         }
-        if (title != null) title.text = "로딩 중…";
         if (progressSpinner != null)
         {
             progressSpinner.SetActive(true);
