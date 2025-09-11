@@ -6,27 +6,29 @@ public class MessageData : System.IEquatable<MessageData>
 {
     // 외부에서 읽을 수 있도록 public get; 으로 변경하는 것이 좋습니다.
     public string id { get; private set; }
-    public string content;
-    public double latitude;
-    public double longitude;
-    public float? z;
+    public string writer { get; private set; }
+    public string content { get; private set; }
+    public DateTime createdAt { get; private set; }
+    public LocationData location;
 
-    public MessageData(string content, double latitude, double longitude, float? z = null)
+    //새로 생성되는 메시지 데이터
+    public MessageData(string writer, string content, LocationData location)
     {
         this.id = Guid.NewGuid().ToString(); // ID 자동 생성
+        this.writer = writer;
         this.content = content;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.z = z;
+        this.createdAt = DateTime.UtcNow;
+        this.location = location;
     }
 
-    public MessageData(string id, string content, double latitude, double longitude, float? z = null)
+    //서버에서 가져오는 메시지 데이터
+    public MessageData(string id, string writer, string content, DateTime createdAt, LocationData location)
     {
-        this.id = id; // 전달받은 ID를 그대로 사용
+        this.id = id;
+        this.writer = writer;
         this.content = content;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.z = z;
+        this.createdAt = createdAt;
+        this.location = location;
     }
 
     public bool Equals(MessageData other)

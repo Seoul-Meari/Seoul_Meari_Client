@@ -19,7 +19,7 @@ public class MessageInputUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(messageText)) return;
         
         SendMessageToServer(messageText, GpsService.Instance.CurrentPosition);
-        messageSpawner.SpawnTemporaryMessage(messageText);
+        messageSpawner.TransferMessage(messageText);
         messageInputField.text = "";
     }
 

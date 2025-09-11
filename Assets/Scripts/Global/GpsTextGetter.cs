@@ -2,7 +2,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-public class GpsGetter : MonoBehaviour
+public class GpsTextGetter : MonoBehaviour
 {
     [SerializeField] private TMP_Text gpsText;
 

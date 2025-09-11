@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
+// Test Code
 public class MessageRepository : MonoBehaviour
 {
     private List<MessageData> allMessages = new List<MessageData>();
@@ -16,7 +17,7 @@ public class MessageRepository : MonoBehaviour
     public List<MessageData> GetMessagesNear(Vector2 position, float radius)
     {
         return allMessages.Where(msg =>
-            GpsService.CalculateDistance(position.x, position.y, msg.latitude, msg.longitude) <= radius
+            GpsService.CalculateDistance(position.x, position.y, msg.location.latitude, msg.location.longitude) <= radius
         ).ToList();
     }
 
@@ -65,7 +66,7 @@ public class MessageRepository : MonoBehaviour
                 // 메시지 데이터 생성 및 리스트에 추가
                 string name = $"주변 메시지 {messageIndex}";
                 float height = UnityEngine.Random.Range(-0.5f, 0.5f);
-                allMessages.Add(new MessageData(messageIndex.ToString(), name, lat, lon, height));
+                allMessages.Add(new MessageData(messageIndex.ToString(), name, new LocationData(lat, lon, height)));
 
                 messageIndex++;
             }

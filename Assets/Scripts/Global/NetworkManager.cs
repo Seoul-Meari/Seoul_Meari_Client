@@ -24,7 +24,9 @@ public class NetworkManager : MonoBehaviour
     }
 
     // --- REST API ---
-    [SerializeField] private string healthCheckEndpoint = "http://192.168.0.14:3000/health"; // NestJS Health Check 주소
+    private string healthCheckEndpoint = $"{ConfigProvider.BaseUrl}/health"; // NestJS Health Check 주소
+    private string MessagesEndpoint => $"{ConfigProvider.BaseUrl}/echo"; // 메시지 전송 API 주소
+
 
     // --- State ---
     /// <summary>
@@ -55,6 +57,7 @@ public class NetworkManager : MonoBehaviour
         {
             yield return webRequest.SendWebRequest();
 
+            Debug.Log("check end point  " + healthCheckEndpoint);
             // 요청 결과 확인
             if (webRequest.result == UnityWebRequest.Result.Success)
             {
@@ -70,5 +73,47 @@ public class NetworkManager : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// MessageData를 서버로 전송합니다.
+    /// </summary>
+    /// <param name="data">전송할 메시지 데이터</param>
+    public void SendMessage(MessageData data)
+    {
+        StartCoroutine(PostMessageCoroutine(data));
+    }
+
+    private IEnumerator PostMessageCoroutine(MessageData data)
+{
+    // 1. C# 객체 → JSON 문자열로 변환
+    //TODO Debug data.writer, data.content ...
+
+    string json = JsonUtility.ToJson(data);
+
+    // 2. 문자열을 바이트 배열로 변환
+    byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+
+    Debug.Log(MessagesEndpoint);
+
+    // 3. UnityWebRequest 설정
+        using (UnityWebRequest webRequest = new UnityWebRequest(MessagesEndpoint, "POST"))
+        {
+            webRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            webRequest.downloadHandler = new DownloadHandlerBuffer();
+            webRequest.SetRequestHeader("Content-Type", "application/json");
+
+            // 4. 요청 전송
+            yield return webRequest.SendWebRequest();
+
+            if (webRequest.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log("Message sent successfully! Response: " + webRequest.downloadHandler.text);
+            }
+            else
+            {
+                Debug.LogError("Failed to send message: " + webRequest.error);
+            }
+        }
+}
 }
 
