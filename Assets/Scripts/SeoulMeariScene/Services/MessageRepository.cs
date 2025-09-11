@@ -63,7 +63,7 @@ public class MessageRepository : MonoBehaviour
                 double lon = centerLon + lonOffset;
 
                 // 메시지 데이터 생성 및 리스트에 추가
-                string name = $"주변 메시지 {messageIndex} 연승 메롱";
+                string name = $"주변 메시지 {messageIndex}";
                 float height = UnityEngine.Random.Range(-0.5f, 0.5f);
                 allMessages.Add(new MessageData(messageIndex.ToString(), name, lat, lon, height));
 

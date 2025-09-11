@@ -525,7 +525,7 @@ GameObject:
   - component: {fileID: 8341809504759338237}
   - component: {fileID: -3729174908820884340}
   m_Layer: 5
-  m_Name: MessagePersonal 1
+  m_Name: MessageServer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
