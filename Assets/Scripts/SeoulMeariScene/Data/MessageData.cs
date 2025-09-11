@@ -23,7 +23,7 @@ public class MessageData : System.IEquatable<MessageData>
     public MessageData(string id, string content, double latitude, double longitude, float? z = null)
     {
         this.id = id; // 전달받은 ID를 그대로 사용
-        this.content = content + "연승 메롱";
+        this.content = content;
         this.latitude = latitude;
         this.longitude = longitude;
         this.z = z;

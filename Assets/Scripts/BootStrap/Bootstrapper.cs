@@ -34,15 +34,15 @@ public class Bootstrapper : MonoBehaviour
         }
 
         // 1) GpsService 준비 대기(타임아웃)
-        yield return new WaitUntil(() => GpsService.Instance != null);
-        float timeout = 10f, t = 0f;
-        while (!GpsService.Instance.IsInitialized && t < timeout)
+        // yield return new WaitUntil(() => GpsService.Instance != null);
+        float timeout = 5f, t = 0f;
+        while ( /* !GpsService.Instance.IsInitialized && */ t < timeout)
         {
             t += Time.unscaledDeltaTime;
             yield return null;
         }
-        if (!GpsService.Instance.IsInitialized)
-            Debug.LogWarning("[Bootstrap] GPS 초기화 타임아웃. 계속 진행합니다.");
+        // if (!GpsService.Instance.IsInitialized)
+        //     Debug.LogWarning("[Bootstrap] GPS 초기화 타임아웃. 계속 진행합니다.");
 
         // 2) 씬 비동기 로드 시작
         var mode = loadAdditively ? LoadSceneMode.Additive : LoadSceneMode.Single;
