@@ -1,8 +1,7 @@
 {
   "dependencies": {
     "com.cesium.unity": "1.18.0",
-    "com.nianticlabs.lightship": "https://github.com/niantic-lightship/ardk-upm.git",
-    "com.nianticlabs.lightship.sharedar": "https://github.com/niantic-lightship/sharedar-upm.git",
+    "com.nobi.roundedcorners": "https://github.com/kirevdokimov/Unity-UI-Rounded-Corners.git",
     "com.unity.collab-proxy": "2.9.3",
     "com.unity.feature.development": "1.0.1",
     "com.unity.mobile.android-logcat": "1.4.5",

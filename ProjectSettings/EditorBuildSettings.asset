@@ -6,8 +6,14 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/AR_Test.unity
+    path: Assets/Scenes/Boot_Strap.unity
+    guid: 8987b573d9d6f4a8d95a7012b4e932a9
+  - enabled: 1
+    path: Assets/Scenes/Seoul_Meari.unity
     guid: e0ddd687a151b4893bd09ef4548736c0
+  - enabled: 1
+    path: Assets/Scenes/Time_Travel.unity
+    guid: 6eb2d0169a1bf4f079c4c6f76c13b035
   m_configObjects:
     Niantic.Lightship.AR.LightshipSettings: {fileID: 11400000, guid: 6867876b111fc406aaa448f5fd49b67f, type: 2}
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 22cd6af2ae6c24210b7ae7f7e5dfb3ba, type: 2}
