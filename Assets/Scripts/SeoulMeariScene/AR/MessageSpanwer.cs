@@ -121,8 +121,7 @@ public class MessageSpawner : MonoBehaviour
 
         // 위치 계산 (지오리퍼런스 사용)
         Vector3 position = Calculator.ToWorldPosition(georeference, message);
-        position.z = Calculator.RandomAround(-1.0f, 1.5f);
-        Debug.Log("z position value: " + position.z);
+        position.z = Calculator.RandomAround(-1.0f, 2.0f);
 
         // Instantiate
         GameObject messageObject = Instantiate(
