@@ -12,6 +12,9 @@
 *.exe
 *.dylib
 
+# Unity StreamingAssets 환경변수
+Assets/StreamingAssets/config.local.json
+
 # Visual Studio / Rider
 /[Ee]xported[Oo]bj/
 .vs/

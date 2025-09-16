@@ -14,18 +14,23 @@ public class Bootstrapper : MonoBehaviour
     [SerializeField] private string firstSceneName = "MainScene";
     [SerializeField] private bool loadAdditively = false;
 
+    [Header("Connection Settings")]
+    [SerializeField] private float connectionTimeout = 10f; // 서버 연결 시도 시간 (초)
+    [SerializeField] private float retryInterval = 2f;    // 재시도 간격 (초)
+
     private void Awake()
     {
         // Persistent 씬을 Single로 갈아끼우는 경우 이 오브젝트는 유지
+        Debug.Log("--------------------New Start--------------------");
         DontDestroyOnLoad(gameObject);
     }
 
     private IEnumerator Start()
     {
-        // 0) 로딩 UI 안전하게 표시
+        // 로딩 UI 표시
         if (loadingCanvas != null)
         {
-            loadingCanvas.gameObject.SetActive(true); // ✅ GameObject 활성화
+            loadingCanvas.gameObject.SetActive(true); // GameObject 활성화
             loadingCanvas.enabled = true;              // 렌더 활성화
         }
         if (progressSpinner != null)
@@ -33,29 +38,73 @@ public class Bootstrapper : MonoBehaviour
             progressSpinner.SetActive(true);
         }
 
-        // 1) GpsService 준비 대기(타임아웃)
-        // yield return new WaitUntil(() => GpsService.Instance != null);
-        float timeout = 5f, t = 0f;
-        while ( /* !GpsService.Instance.IsInitialized && */ t < timeout)
+        /*
+        네트워크 준비 
+        */
+        NetworkManager networkManager = NetworkManager.Instance;
+        if (networkManager == null)
         {
-            t += Time.unscaledDeltaTime;
-            yield return null;
+            Debug.LogError("NetworkManager instance not found in the scene.");
+            yield break;
         }
-        // if (!GpsService.Instance.IsInitialized)
-        //     Debug.LogWarning("[Bootstrap] GPS 초기화 타임아웃. 계속 진행합니다.");
 
-        // 2) 씬 비동기 로드 시작
+        // 서버가 준비될 때까지 일정 간격으로 상태 확인 (타임아웃 포함)
+        float elapsedTime = 0f;
+        while (elapsedTime < connectionTimeout)
+        {
+            // NetworkManager의 상태 확인 코루틴을 호출하고 끝날 때까지 대기
+            yield return StartCoroutine(networkManager.CheckServerStatus());
+
+            // 서버가 준비되었다면 반복문을 탈출
+            if (networkManager.IsServerReady)
+            {
+                break;
+            }
+
+            // 준비되지 않았다면 재시도 간격만큼 대기
+            Debug.Log($"Server not ready. Retrying in {retryInterval} seconds...");
+            yield return new WaitForSeconds(retryInterval);
+            elapsedTime += retryInterval;
+        }
+
+        /*
+        GPS 권한 설정 및 일회성 위치 확인
+        */
+        Vector3 nowPos;
+        InitialLocation initialLocation = InitialLocation.Instance;
+        if (initialLocation == null)
+        {
+            Debug.LogError("MessageCache instance not found in the scene.");
+            yield break;
+        }
+        yield return StartCoroutine(initialLocation.SetInitialPos());
+        nowPos = initialLocation.GetInitialPos();
+
+        /*
+        메시지 캐시
+        */
+        MessageCache messageCache = MessageCache.Instance;
+        if (messageCache == null)
+        {
+            Debug.LogError("MessageCache instance not found in the scene.");
+            yield break;
+        }
+        yield return StartCoroutine(messageCache.InitiateMessage(nowPos));
+
+        /*
+        메인 씬 준비
+        */
         var mode = loadAdditively ? LoadSceneMode.Additive : LoadSceneMode.Single;
         AsyncOperation op = SceneManager.LoadSceneAsync(firstSceneName, mode);
         op.allowSceneActivation = false; // 0.9에서 대기
 
-        // 5) 씬 활성화
+        // 씬 활성화
         op.allowSceneActivation = true;
 
-        // ✨ 중요: 씬이 완전히 활성화되고 첫 프레임을 그릴 때까지 한 프레임 기다립니다.
-        yield return null; 
+        // 중요: 씬이 완전히 활성화되고 첫 프레임을 그릴 때까지 한 프레임 기다립니다.
+        yield return null;
 
-        // 6) 씬 넘어간 뒤 로딩 UI 끄기
+        // 씬 넘어간 뒤 로딩 UI 끄기
         if (loadingCanvas != null)
         {
             loadingCanvas.gameObject.SetActive(false);
