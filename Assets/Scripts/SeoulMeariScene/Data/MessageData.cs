@@ -1,14 +1,15 @@
 // MessageData.cs
 using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 [System.Serializable]
 public class MessageData : System.IEquatable<MessageData>
 {
-    // 외부에서 읽을 수 있도록 public get; 으로 변경하는 것이 좋습니다.
-    public string id { get; private set; }
-    public string writer { get; private set; }
-    public string content { get; private set; }
-    public DateTime createdAt { get; private set; }
+    public string id;
+    public string writer;
+    public string content;
+    public string createdAt;
     public LocationData location;
 
     //새로 생성되는 메시지 데이터
@@ -17,12 +18,14 @@ public class MessageData : System.IEquatable<MessageData>
         this.id = Guid.NewGuid().ToString(); // ID 자동 생성
         this.writer = writer;
         this.content = content;
-        this.createdAt = DateTime.UtcNow;
+        this.createdAt = DateTime.UtcNow.ToString("o");
         this.location = location;
     }
 
     //서버에서 가져오는 메시지 데이터
-    public MessageData(string id, string writer, string content, DateTime createdAt, LocationData location)
+    [JsonConstructor]
+
+    public MessageData(string id, string writer, string content, string createdAt, LocationData location)
     {
         this.id = id;
         this.writer = writer;
@@ -35,11 +38,19 @@ public class MessageData : System.IEquatable<MessageData>
     {
         if (other is null)
             return false;
-        
+
         return !string.IsNullOrEmpty(this.id) && this.id == other.id;
     }
 
     public override bool Equals(object obj) => Equals(obj as MessageData);
 
     public override int GetHashCode() => id?.GetHashCode() ?? base.GetHashCode();
+}
+
+// MessageData를 감싸기 위한 Wrapper 클래스
+// GET API 호출 시 사용
+[System.Serializable]
+public class MessageList
+{
+    public List<MessageData> messages;
 }

@@ -23,7 +23,7 @@ public class MessageInputUI : MonoBehaviour
         messageInputField.text = "";
     }
 
-    private void SendMessageToServer(string message, Vector2 position)
+    private void SendMessageToServer(string message, Vector3 position)
     {
         Debug.Log($"서버로 전송 시도: \"{message}\" at ({position.x}, {position.y})");
         // 실제 서버 통신 코드가 들어갈 자리입니다.

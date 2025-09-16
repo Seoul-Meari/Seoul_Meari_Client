@@ -21,18 +21,12 @@ public class Bootstrapper : MonoBehaviour
     private void Awake()
     {
         // Persistent 씬을 Single로 갈아끼우는 경우 이 오브젝트는 유지
+        Debug.Log("--------------------New Start--------------------");
         DontDestroyOnLoad(gameObject);
     }
 
     private IEnumerator Start()
     {
-        NetworkManager networkManager = NetworkManager.Instance;
-        if (networkManager == null)
-        {
-            Debug.LogError("NetworkManager instance not found in the scene.");
-            yield break;
-        }
-
         // 로딩 UI 표시
         if (loadingCanvas != null)
         {
@@ -42,6 +36,16 @@ public class Bootstrapper : MonoBehaviour
         if (progressSpinner != null)
         {
             progressSpinner.SetActive(true);
+        }
+
+        /*
+        네트워크 준비 
+        */
+        NetworkManager networkManager = NetworkManager.Instance;
+        if (networkManager == null)
+        {
+            Debug.LogError("NetworkManager instance not found in the scene.");
+            yield break;
         }
 
         // 서버가 준비될 때까지 일정 간격으로 상태 확인 (타임아웃 포함)
@@ -63,7 +67,33 @@ public class Bootstrapper : MonoBehaviour
             elapsedTime += retryInterval;
         }
 
-        // 씬 비동기 로드 시작
+        /*
+        GPS 권한 설정 및 일회성 위치 확인
+        */
+        Vector3 nowPos;
+        InitialLocation initialLocation = InitialLocation.Instance;
+        if (initialLocation == null)
+        {
+            Debug.LogError("MessageCache instance not found in the scene.");
+            yield break;
+        }
+        yield return StartCoroutine(initialLocation.SetInitialPos());
+        nowPos = initialLocation.GetInitialPos();
+
+        /*
+        메시지 캐시
+        */
+        MessageCache messageCache = MessageCache.Instance;
+        if (messageCache == null)
+        {
+            Debug.LogError("MessageCache instance not found in the scene.");
+            yield break;
+        }
+        yield return StartCoroutine(messageCache.InitiateMessage(nowPos));
+
+        /*
+        메인 씬 준비
+        */
         var mode = loadAdditively ? LoadSceneMode.Additive : LoadSceneMode.Single;
         AsyncOperation op = SceneManager.LoadSceneAsync(firstSceneName, mode);
         op.allowSceneActivation = false; // 0.9에서 대기
@@ -71,8 +101,8 @@ public class Bootstrapper : MonoBehaviour
         // 씬 활성화
         op.allowSceneActivation = true;
 
-        // ✨ 중요: 씬이 완전히 활성화되고 첫 프레임을 그릴 때까지 한 프레임 기다립니다.
-        yield return null; 
+        // 중요: 씬이 완전히 활성화되고 첫 프레임을 그릴 때까지 한 프레임 기다립니다.
+        yield return null;
 
         // 씬 넘어간 뒤 로딩 UI 끄기
         if (loadingCanvas != null)

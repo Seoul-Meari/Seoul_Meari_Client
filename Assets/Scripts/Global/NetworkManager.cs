@@ -1,6 +1,10 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using Newtonsoft.Json;
 
 public class NetworkManager : MonoBehaviour
 {
@@ -43,6 +47,7 @@ public class NetworkManager : MonoBehaviour
             return;
         }
         _instance = this;
+        Debug.Log("Base Url: " + ConfigProvider.BaseUrl);
         DontDestroyOnLoad(gameObject);
     }
 
@@ -57,7 +62,6 @@ public class NetworkManager : MonoBehaviour
         {
             yield return webRequest.SendWebRequest();
 
-            Debug.Log("check end point  " + healthCheckEndpoint);
             // 요청 결과 확인
             if (webRequest.result == UnityWebRequest.Result.Success)
             {
@@ -84,19 +88,16 @@ public class NetworkManager : MonoBehaviour
     }
 
     private IEnumerator PostMessageCoroutine(MessageData data)
-{
-    // 1. C# 객체 → JSON 문자열로 변환
-    //TODO Debug data.writer, data.content ...
+    {
+        // 1. C# 객체 → JSON 문자열로 변환
+        string json = JsonUtility.ToJson(data);
 
-    string json = JsonUtility.ToJson(data);
+        // 2. 문자열을 바이트 배열로 변환
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
 
-    // 2. 문자열을 바이트 배열로 변환
-    byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
 
-    Debug.Log(MessagesEndpoint);
-
-    // 3. UnityWebRequest 설정
-        using (UnityWebRequest webRequest = new UnityWebRequest(MessagesEndpoint, "POST"))
+        // 3. UnityWebRequest 설정
+        using (UnityWebRequest webRequest = new UnityWebRequest($"{MessagesEndpoint}", "POST"))
         {
             webRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
             webRequest.downloadHandler = new DownloadHandlerBuffer();
@@ -114,6 +115,57 @@ public class NetworkManager : MonoBehaviour
                 Debug.LogError("Failed to send message: " + webRequest.error);
             }
         }
-}
+    }
+
+    /// <summary>
+    /// 특정 위치 주변의 메시지를 서버에 요청합니다.
+    /// </summary>
+    /// <param name="position">중심 GPS 좌표 (x=latitude, y=longitude)</param>
+    /// <param name="degree">검색 반경 (미터)</param>
+    /// <param name="onSuccess">성공 시 호출될 콜백 (메시지 리스트 전달)</param>
+    /// <param name="onError">실패 시 호출될 콜백 (에러 메시지 전달)</param>
+    public void RequestMessagesNear(Vector3 position, float degree, Action<List<MessageData>> onSuccess, Action<string> onError)
+    {
+        StartCoroutine(GetMessagesCoroutine(position, degree, onSuccess, onError));
+    }
+
+    private IEnumerator GetMessagesCoroutine(Vector3 position, float degree, Action<List<MessageData>> onSuccess, Action<string> onError)
+    {
+        // 1. 쿼리 파라미터를 포함한 최종 URL 생성
+        string uri = $"{MessagesEndpoint}/nearby?lat={position.x}&lon={position.y}&z={position.z}&degree={degree}";
+
+        // 2. UnityWebRequest를 사용한 GET 요청
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
+        {
+            // 3. 요청 전송 및 대기
+            yield return webRequest.SendWebRequest();
+            // 4. 결과 확인
+            if (webRequest.result == UnityWebRequest.Result.Success)
+            {
+                string jsonResponse = webRequest.downloadHandler.text;
+
+                // Unity의 JsonUtility는 JSON 배열 [ ... ]을 직접 파싱하지 못하므로,
+                // { "messages": [ ... ] } 형태의 JSON을 파싱하기 위해 래퍼 클래스(MessageList)를 사용합니다.
+                List<MessageData> messages = JsonConvert.DeserializeObject<List<MessageData>>(jsonResponse);
+
+                if (messages != null)
+                {
+                    Debug.Log($"{messages.Count}개의 메시지를 서버로부터 수신했습니다.");
+                    onSuccess?.Invoke(messages); // 성공 콜백 호출
+                }
+                else
+                {
+                    Debug.LogError("JSON 파싱에 실패했습니다. 응답 형식 확인 필요: " + jsonResponse);
+                    onError?.Invoke("Failed to parse JSON response."); // 실패 콜백 호출
+                }
+            }
+            else
+            {
+                // 6. 실패 시 에러 콜백 호출
+                Debug.LogError("메시지 수신 실패: " + webRequest.error);
+                onError?.Invoke(webRequest.error);
+            }
+        }
+    }
 }
 

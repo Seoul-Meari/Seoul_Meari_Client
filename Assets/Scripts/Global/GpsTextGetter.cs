@@ -8,18 +8,15 @@ public class GpsTextGetter : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("start");
         // 인스턴스가 이미 떠 있으면 바로 구독
         if (GpsService.Instance != null)
         {
-            Debug.Log("instance is");
-            var pos = GpsService.Instance.CurrentPosition;
+            Vector3 pos = GpsService.Instance.CurrentPosition;
             OnLocationUpdated(pos);
             Subscribe();
         }
         else
         {
-            Debug.Log("instance not");
             // 아직 생성 전이면 기다렸다가 구독
             StartCoroutine(WaitAndSubscribe());
         }
@@ -43,7 +40,7 @@ public class GpsTextGetter : MonoBehaviour
         // 이미 초기화되어 있고 첫 값이 있었다면 현재값으로 즉시 갱신(선택)
         if (GpsService.Instance.IsInitialized)
         {
-            var pos = GpsService.Instance.CurrentPosition;
+            Vector3 pos = GpsService.Instance.CurrentPosition;
             OnLocationUpdated(pos);
         }
     }
@@ -54,7 +51,7 @@ public class GpsTextGetter : MonoBehaviour
             GpsService.Instance.OnLocationUpdated.RemoveListener(OnLocationUpdated);
     }
 
-    private void OnLocationUpdated(Vector2 pos)
+    private void OnLocationUpdated(Vector3 pos)
     {
         // 문자열 할당 최소화: 포맷 지정
         gpsText.text = $"Lat: {pos.x:F6}\nLon: {pos.y:F6}";
