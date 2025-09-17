@@ -65,7 +65,7 @@ public class AutoScreenshot : MonoBehaviour
         screenTexture.Apply();
         
         // --- 3. UI 즉시 복구 ---
-        // mainCamera.cullingMask = originalCullingMask;
+        mainCamera.cullingMask = originalCullingMask;
         // if (overlayCanvases != null)
         // {
         //     foreach (var canvas in overlayCanvases)
