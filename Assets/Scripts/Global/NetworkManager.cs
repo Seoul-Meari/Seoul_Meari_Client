@@ -28,8 +28,9 @@ public class NetworkManager : MonoBehaviour
     }
 
     // --- REST API ---
-    private string healthCheckEndpoint = $"{ConfigProvider.BaseUrl}/health"; // NestJS Health Check 주소
-    private string MessagesEndpoint => $"{ConfigProvider.BaseUrl}/echo"; // 메시지 전송 API 주소
+    private static string baseUrl = "http://54.153.21.98";
+    private string healthCheckEndpoint = $"{baseUrl}/health"; // NestJS Health Check 주소
+    private string MessagesEndpoint => $"{baseUrl}/echo"; // 메시지 전송 API 주소
 
 
     // --- State ---
@@ -47,7 +48,7 @@ public class NetworkManager : MonoBehaviour
             return;
         }
         _instance = this;
-        Debug.Log("Base Url: " + ConfigProvider.BaseUrl);
+        Debug.Log("Base Url: " + baseUrl /*ConfigProvider.BaseUrl*/);
         DontDestroyOnLoad(gameObject);
     }
 
