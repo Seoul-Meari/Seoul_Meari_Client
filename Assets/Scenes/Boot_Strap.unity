@@ -552,8 +552,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC11C\uC6B8\n\uBA54\uC544\uB9AC"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a9e403a81332c46eeb91f161c55c52e4, type: 2}
-  m_sharedMaterial: {fileID: 6160920215315071597, guid: a9e403a81332c46eeb91f161c55c52e4, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b12b72223bc074df7b486d247d54e17e, type: 2}
+  m_sharedMaterial: {fileID: -2102134681488866943, guid: b12b72223bc074df7b486d247d54e17e, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
