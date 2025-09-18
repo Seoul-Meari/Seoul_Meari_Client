@@ -29,7 +29,7 @@ public static class Calculator
     return gps;
   }
 
-  public static Vector3 ToWorldPosition(CesiumGeoreference georeference, MessageData data)
+  public static Vector3 ToWorldPosition(CesiumGeoreference georeference, LocationData location)
   {
     if (georeference == null)
     {
@@ -37,9 +37,9 @@ public static class Calculator
       return Vector3.zero;
     }
 
-    double lon = data.location.longitude;
-    double lat = data.location.latitude;
-    double h = data.location.z;
+    double lon = location.longitude;
+    double lat = location.latitude;
+    double h = location.z;
 
     // 1) LLA -> ECEF
     double3 ecef = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(

@@ -120,7 +120,7 @@ public class MessageSpawner : MonoBehaviour
         }
 
         // 위치 계산 (지오리퍼런스 사용)
-        Vector3 position = Calculator.ToWorldPosition(georeference, message);
+        Vector3 position = Calculator.ToWorldPosition(georeference, message.location);
         position.z = Calculator.RandomAround(-1.0f, 2.0f);
 
         // Instantiate
