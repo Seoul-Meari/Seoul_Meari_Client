@@ -10,6 +10,7 @@ public static class GridConfig
         {
             return (float)(_degree * (double)meter);
         }
-    }    public const double eps = 1e-12;  // 충분히 작은 epsilon
+    }
+    public const double eps = 1e-12;  // 충분히 작은 epsilon
     public static int gridSize { get; } = 5;
 }

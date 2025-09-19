@@ -97,7 +97,7 @@ namespace VRContent.Loading
             var op = req.SendWebRequest();
             while (!op.isDone)
             {
-                // Debug.Log($"다운로드 진행률: {req.downloadProgress * 100f:0.0}% ({req.downloadedBytes / (1024f*1024f):0.0}MB)");
+                Debug.Log($"다운로드 진행률: {req.downloadProgress * 100f:0.0}% ({req.downloadedBytes / (1024f*1024f):0.0}MB)");
                 await Task.Yield();
             }
 

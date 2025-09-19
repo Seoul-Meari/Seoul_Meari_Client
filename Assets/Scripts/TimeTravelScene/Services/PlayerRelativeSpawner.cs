@@ -112,12 +112,12 @@ public class PlayerRelativeSpawner : MonoBehaviour
         if (logTimer >= logInterval)
         {
             //     Vector3 worldPosition = playerTransform.position;
-            Debug.Log(
-                            $"GPS -> 위도: {cameraAnchor.longitudeLatitudeHeight.y:F5}, 경도: {cameraAnchor.longitudeLatitudeHeight.x:F5}, 고도: {cameraAnchor.longitudeLatitudeHeight.z:F1} m"
+            // Debug.Log(
+                            // $"GPS -> 위도: {cameraAnchor.longitudeLatitudeHeight.y:F5}, 경도: {cameraAnchor.longitudeLatitudeHeight.x:F5}, 고도: {cameraAnchor.longitudeLatitudeHeight.z:F1} m"
 
             //         $"GPS -> 위도: {currentGpsPosition.x:F5}, 경도: {currentGpsPosition.y:F5}, 고도: {currentAltitude:F1} m" +
             //         $" | Unity 월드 -> X: {worldPosition.x:F1}, Y: {worldPosition.y:F1}, Z: {worldPosition.z:F1}"
-            );
+            // );
             logTimer = 0.0f;
         }
     }

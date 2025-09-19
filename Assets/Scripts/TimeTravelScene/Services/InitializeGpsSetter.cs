@@ -58,6 +58,8 @@ public class InitialGpsSetter : MonoBehaviour
         double height = 1;
 
         Debug.Log($"초기 GPS 위치: Lat {latitude}, Lon {longitude}, H {height}");
+        georeference.SetOriginLongitudeLatitudeHeight(longitude, latitude, height);
+
         playerAnchor = playerCamera.GetComponent<CesiumGlobeAnchor>();
         playerAnchor.longitudeLatitudeHeight = new double3(longitude, latitude, height);
 
