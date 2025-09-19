@@ -72,6 +72,7 @@ namespace VRContent.Loading
             return true;
         }
 
+        //url + bundle ID 형태로 다운로드
         public async Task LoadRequiredAsync(string bundleBaseUrl, string mainBundleName)
         {
             if (_manifest == null || string.IsNullOrEmpty(mainBundleName)) return;
@@ -94,7 +95,12 @@ namespace VRContent.Loading
 
             using var req = UnityWebRequest.Get(sourceUri);
             var op = req.SendWebRequest();
-            while (!op.isDone) await Task.Yield();
+            while (!op.isDone)
+            {
+                // Debug.Log($"다운로드 진행률: {req.downloadProgress * 100f:0.0}% ({req.downloadedBytes / (1024f*1024f):0.0}MB)");
+                await Task.Yield();
+            }
+
 
 #if UNITY_2020_2_OR_NEWER
             if (req.result != UnityWebRequest.Result.Success)

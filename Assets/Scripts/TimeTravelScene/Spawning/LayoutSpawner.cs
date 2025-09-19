@@ -8,9 +8,9 @@ using VRContent.Spawning;
 public class LayoutSpawner : MonoBehaviour
 {
     [Header("Sources (URL or StreamingAssets-relative)")]
-    public string manifestBundleUrl;     // "Android" or "https://.../Android"
-    public string bundleBaseUrl = "";    // "Android" or "https://.../Android"
-    public string layoutJsonUrl;         // "layout.json" or "https://.../layout.json"
+    public string manifestBundleUrl;
+    public string bundleBaseUrl = "";
+    public string layoutJsonUrl;
 
     [Header("Cesium")]
     public CesiumGeoreference georeference;
@@ -27,6 +27,7 @@ public class LayoutSpawner : MonoBehaviour
     {
         if (georeference == null) { Debug.LogError("CesiumGeoreference 미지정"); return; }
         if (string.IsNullOrEmpty(manifestBundleUrl)) { Debug.LogError("manifestBundleUrl 비어있음"); return; }
+        if (string.IsNullOrEmpty(bundleBaseUrl)) { Debug.LogError("bundleBaseUrl 비어있음"); return; }
         if (string.IsNullOrEmpty(layoutJsonUrl)) { Debug.LogError("layoutJsonUrl 비어있음"); return; }
 
         _bundles = new BundleLoader { ForceRedownload = forceRedownload, EnableLogs = config ? config.enableLogs : false };
@@ -110,8 +111,6 @@ public class LayoutSpawner : MonoBehaviour
                 // Anchor 세팅
                 var anchor = go.GetComponent<CesiumGlobeAnchor>() ?? go.AddComponent<CesiumGlobeAnchor>();
                 anchor.longitudeLatitudeHeight = new double3(t.location.longitude, t.location.latitude, t.location.z);
-
-                Debug.Log("secret" + t.location.z);
 
                 go.SetActive(true);
 
