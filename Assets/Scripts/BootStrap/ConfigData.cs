@@ -27,7 +27,6 @@ public static class ConfigProvider
 
         // 2) StreamingAssets (개인 오버라이드)
         var localPath = Path.Combine(Application.streamingAssetsPath, "config.local.json");
-        Debug.Log("config local" + localPath);
 #if UNITY_ANDROID && !UNITY_EDITOR
         // 안드로이드는 jar 내부라서 UnityWebRequest로 읽어야 함
         using (UnityWebRequest req = UnityWebRequest.Get(localPath))

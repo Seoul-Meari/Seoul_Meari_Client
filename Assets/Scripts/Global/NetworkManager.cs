@@ -54,7 +54,6 @@ public class NetworkManager : MonoBehaviour
             return;
         }
         _instance = this;
-        Debug.Log("Base Url: " + baseUrl /*ConfigProvider.BaseUrl*/);
         DontDestroyOnLoad(gameObject);
     }
 
@@ -230,7 +229,6 @@ public class NetworkManager : MonoBehaviour
     private IEnumerator LoadImageRoutine(string imageKey, Action<Texture2D> onSuccess, Action<string> onError)
     {
         string url = $"{bucketEndpoint}/presigned-url/echo/image?image-key={imageKey}";
-        Debug.Log("api url : " + url);
         // 1) 먼저 presigned URL 받기
         UnityWebRequest apiRequest = UnityWebRequest.Get(url);
         yield return apiRequest.SendWebRequest();

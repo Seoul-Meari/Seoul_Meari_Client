@@ -117,7 +117,6 @@ public class MessageCache : MonoBehaviour
     {
         Vector3Int newPos = Calculator.CalculateBenchMarkInt(pos);
         cachedMessageBoard[newPos] = messages;
-        Debug.Log(JsonConvert.SerializeObject(cachedMessageBoard));
     }
 
     // private IEnumerator RemoveMessages(List<Vector3> messagesPos)
