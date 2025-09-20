@@ -101,7 +101,6 @@ public class MessageCache : MonoBehaviour
             },
             onError: err =>
             {
-
                 done = true;
             }
         );
