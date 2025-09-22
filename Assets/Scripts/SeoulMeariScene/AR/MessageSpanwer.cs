@@ -4,6 +4,7 @@ using TMPro;
 using CesiumForUnity;
 using System.Collections;
 using System.Linq;
+using UnityEngine.UI;
 
 public class MessageSpawner : MonoBehaviour
 {
@@ -27,9 +28,10 @@ public class MessageSpawner : MonoBehaviour
 
     public GameObject messagePrefabServer;
     public GameObject messagePrefabPerson;
-    [SerializeField]
-    private CesiumGeoreference georeference;
-    public TMP_InputField messageBox;
+    [SerializeField] private CesiumGeoreference georeference;
+    [SerializeField] private TMP_InputField messageBox;
+    [SerializeField] private GameObject messageImageObject;
+    [SerializeField] private GameObject cameraIcon;
     // 동시에 생성 진행 중일 수 있는 최대 개수(프레임 드랍 방지)
     [SerializeField] private int maxSpawnInflight = 5;
     // 한 프레임에 처리할 셀(그리드) 수 제한
@@ -120,8 +122,8 @@ public class MessageSpawner : MonoBehaviour
         }
 
         // 위치 계산 (지오리퍼런스 사용)
-        Vector3 position = Calculator.ToWorldPosition(georeference, message);
-        position.z = Calculator.RandomAround(-1.0f, 2.0f);
+        Vector3 position = Calculator.ToWorldPosition(georeference, message.location);
+        position.y = Calculator.RandomAround(-0.5f, 0.5f);
 
         // Instantiate
         GameObject messageObject = Instantiate(
@@ -132,7 +134,7 @@ public class MessageSpawner : MonoBehaviour
         );
 
         // 초기화
-        var display = messageObject.GetComponent<MessageDisplay>();
+        var display = messageObject.GetComponent<MessageInfo>();
         if (display != null)
         {
             display.Setup(message);
@@ -160,36 +162,37 @@ public class MessageSpawner : MonoBehaviour
 
     public void SendMessage()
     {
-        if (messageBox.text.Length > 0)
+        RawImage messageImage = messageImageObject.GetComponent<RawImage>();
+        if (messageBox.text.Length > 0 && messageImage.texture != null)
         {
-            TransferMessage(messageBox.text);
+            string transferText = messageBox.text;
+            Texture2D sourceTex = messageImage.texture as Texture2D;
+            if (sourceTex != null)
+            {
+            // 새 Texture2D를 만들어 복사
+                Texture2D transferImage = new Texture2D(sourceTex.width, sourceTex.height, sourceTex.format, false);
+                transferImage.SetPixels(sourceTex.GetPixels());
+                transferImage.Apply();
+
+                TransferMessage(transferText, transferImage);
+            }
             messageBox.text = "";
+            messageImage.texture = null;
+            messageImageObject.SetActive(false);
+            cameraIcon.SetActive(true);
         }
     }
 
-    public void TransferMessage(string content, float spawnDistance = 0.3f)
+    public void TransferMessage(string content, Texture2D messageImage, float spawnDistance = 0.3f)
     {
         Transform cameraTransform = Camera.main.transform;
         Vector3 spawnPosition = cameraTransform.position + cameraTransform.forward * spawnDistance;
         GameObject messageObject = Instantiate(messagePrefabPerson, spawnPosition, Quaternion.identity);
 
         Vector3 pos = GpsService.Instance.CurrentPosition;
-        MessageData showMessageData = new(tempWriter, content, new LocationData(pos.x, pos.y, 0));
-        messageObject.GetComponent<MessageDisplay>().Setup(showMessageData);
+        MessageData showMessageData = new(tempWriter, content, new LocationData(pos.x, pos.y, 0), messageImage);
+        messageObject.GetComponent<MessageInfo>().Setup(showMessageData);
 
         NetworkManager.Instance.SendMessage(showMessageData);
     }
-
-    // private Vector3 ConvertGpsToWorldPosition(MessageData data)
-    // {
-    //     var baseLat = Input.location.lastData.latitude;
-    //     var baseLon = Input.location.lastData.longitude;
-    //     float worldX = (float)((data.location.longitude - baseLon) * 89000f);
-    //     float worldZ = (float)((data.location.latitude - baseLat) * 111000f);
-
-    //     // data.z 값이 null이면 기본값으로 1.0f를 사용하도록 수정
-    //     float worldY = data.location.z;
-
-    //     return new Vector3(worldX, worldY, worldZ);
-    // }
 }

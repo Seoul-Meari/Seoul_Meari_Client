@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using TMPro;
 
-[RequireComponent(typeof(MessageDisplay))]
+[RequireComponent(typeof(MessageInfo))]
 public class TemporaryMessageAnimator : MonoBehaviour
 {
     public float displayDuration = 1.5f;
@@ -18,9 +18,9 @@ public class TemporaryMessageAnimator : MonoBehaviour
 
     void Start()
     {
-        contentText = GetComponent<MessageDisplay>().ContentText;
-        writer = GetComponent<MessageDisplay>().Writer;
-        createdAt = GetComponent<MessageDisplay>().CreatedAt;
+        contentText = GetComponent<MessageInfo>().ContentText;
+        writer = GetComponent<MessageInfo>().Writer;
+        createdAt = GetComponent<MessageInfo>().CreatedAt;
         StartCoroutine(AnimateAndDestroy());
     }
 

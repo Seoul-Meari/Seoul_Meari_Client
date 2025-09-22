@@ -1,10 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
+using System.Text;
 
 public class NetworkManager : MonoBehaviour
 {
@@ -28,10 +28,16 @@ public class NetworkManager : MonoBehaviour
     }
 
     // --- REST API ---
-    private static string baseUrl = "http://54.153.21.98";
+    // private static string baseUrl = "http://54.153.21.98";
+    private static string baseUrl = "http://192.168.0.14:3000";
     private string healthCheckEndpoint = $"{baseUrl}/health"; // NestJS Health Check 주소
-    private string MessagesEndpoint => $"{baseUrl}/echo"; // 메시지 전송 API 주소
+    private string bucketEndpoint = $"{baseUrl}/s3";
+    private string messagesEndpoint = $"{baseUrl}/echo"; // 메시지 전송 API 주소
+    private string assetEndpoint = $"{baseUrl}/unity"; // 에셋 관련 API
 
+    // --- DTOs ---
+    [Serializable] private class PresignReq { public string filename; public string contentType; }
+    [Serializable] private class PresignRes { public string url; public string key; }
 
     // --- State ---
     /// <summary>
@@ -48,7 +54,6 @@ public class NetworkManager : MonoBehaviour
             return;
         }
         _instance = this;
-        Debug.Log("Base Url: " + baseUrl /*ConfigProvider.BaseUrl*/);
         DontDestroyOnLoad(gameObject);
     }
 
@@ -90,7 +95,53 @@ public class NetworkManager : MonoBehaviour
 
     private IEnumerator PostMessageCoroutine(MessageData data)
     {
+        string imageKey;
+        byte[] pngBytes = data.image.EncodeToPNG();
+        string imageFilename = Guid.NewGuid().ToString() + ".png";
+        string imageContentType = "image/png";
+
+
+
+        // 1-1) presigned URL 발급
+        var presignBody = JsonConvert.SerializeObject(new
+        {
+            filename = imageFilename,
+            contentType = imageContentType
+        });
+
+        using (UnityWebRequest webRequest = new UnityWebRequest(bucketEndpoint + "/presigned-url/echo", "POST"))
+        {
+            webRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(presignBody));
+            webRequest.downloadHandler = new DownloadHandlerBuffer();
+            webRequest.SetRequestHeader("Content-Type", "application/json");
+            yield return webRequest.SendWebRequest();
+
+            if (webRequest.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("[Echo] presign failed: " + webRequest.error + " / " + webRequest.downloadHandler.text);
+                yield break;
+            }
+
+            var presignRes = JsonConvert.DeserializeObject<PresignRes>(webRequest.downloadHandler.text);
+            imageKey = presignRes.key;
+
+            // 1-2) S3 PUT 업로드 (Content-Type 반드시 일치)
+            using (UnityWebRequest putRequest = new UnityWebRequest(presignRes.url, UnityWebRequest.kHttpVerbPUT))
+            {
+                putRequest.uploadHandler = new UploadHandlerRaw(pngBytes);
+                putRequest.downloadHandler = new DownloadHandlerBuffer();
+                putRequest.SetRequestHeader("Content-Type", imageContentType);
+                yield return putRequest.SendWebRequest();
+
+                if (putRequest.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.LogError("[Echo] S3 PUT failed: " + putRequest.error + " / " + putRequest.downloadHandler.text);
+                    yield break;
+                }
+            }
+        }
         // 1. C# 객체 → JSON 문자열로 변환
+        data.imageKey = imageKey;
         string json = JsonUtility.ToJson(data);
 
         // 2. 문자열을 바이트 배열로 변환
@@ -98,7 +149,7 @@ public class NetworkManager : MonoBehaviour
 
 
         // 3. UnityWebRequest 설정
-        using (UnityWebRequest webRequest = new UnityWebRequest($"{MessagesEndpoint}", "POST"))
+        using (UnityWebRequest webRequest = new UnityWebRequest($"{messagesEndpoint}", "POST"))
         {
             webRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
             webRequest.downloadHandler = new DownloadHandlerBuffer();
@@ -133,7 +184,7 @@ public class NetworkManager : MonoBehaviour
     private IEnumerator GetMessagesCoroutine(Vector3 position, float degree, Action<List<MessageData>> onSuccess, Action<string> onError)
     {
         // 1. 쿼리 파라미터를 포함한 최종 URL 생성
-        string uri = $"{MessagesEndpoint}/nearby?lat={position.x}&lon={position.y}&z={position.z}&degree={degree}";
+        string uri = $"{messagesEndpoint}/nearby?lat={position.x}&lon={position.y}&z={position.z}&degree={degree}";
 
         // 2. UnityWebRequest를 사용한 GET 요청
         using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
@@ -145,8 +196,6 @@ public class NetworkManager : MonoBehaviour
             {
                 string jsonResponse = webRequest.downloadHandler.text;
 
-                // Unity의 JsonUtility는 JSON 배열 [ ... ]을 직접 파싱하지 못하므로,
-                // { "messages": [ ... ] } 형태의 JSON을 파싱하기 위해 래퍼 클래스(MessageList)를 사용합니다.
                 List<MessageData> messages = JsonConvert.DeserializeObject<List<MessageData>>(jsonResponse);
 
                 if (messages != null)
@@ -165,6 +214,129 @@ public class NetworkManager : MonoBehaviour
                 // 6. 실패 시 에러 콜백 호출
                 Debug.LogError("메시지 수신 실패: " + webRequest.error);
                 onError?.Invoke(webRequest.error);
+            }
+        }
+    }
+
+
+    public void LoadEchoImage(string imageKey, Action<Texture2D> onSuccess, Action<string> onError)
+    {
+        StartCoroutine(LoadImageRoutine(imageKey, onSuccess, onError));
+    }
+
+    private IEnumerator LoadImageRoutine(string imageKey, Action<Texture2D> onSuccess, Action<string> onError)
+    {
+        string url = $"{bucketEndpoint}/presigned-url/echo/image?image-key={imageKey}";
+        // 1) 먼저 presigned URL 받기
+        UnityWebRequest apiRequest = UnityWebRequest.Get(url);
+        yield return apiRequest.SendWebRequest();
+
+        if (apiRequest.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("API 요청 실패: " + apiRequest.error);
+            yield break;
+        }
+
+        string presignedUrl = apiRequest.downloadHandler.text.Replace("\"", ""); // 문자열로 받은 URL
+
+        // 2) presigned URL로 이미지 다운로드
+        UnityWebRequest imageRequest = UnityWebRequestTexture.GetTexture(presignedUrl);
+        yield return imageRequest.SendWebRequest();
+
+        if (imageRequest.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("이미지 다운로드 실패: " + imageRequest.error);
+            yield break;
+        }
+
+        Texture2D texture = DownloadHandlerTexture.GetContent(imageRequest);
+
+        if (texture != null)
+        {
+            onSuccess?.Invoke(texture);
+        }
+        else
+        {
+            onError?.Invoke("Failed");
+        }
+    }
+
+    public void GetAssetMetaData(string os, Action<List<AssetBundleMeta>> onSuccess, Action<string> onError)
+    {
+        StartCoroutine(GetAssetMetaCoroutine(os, onSuccess, onError));
+    }
+
+    private IEnumerator GetAssetMetaCoroutine(string os, Action<List<AssetBundleMeta>> onSuccess, Action<string> onError)
+    {
+        string url = $"{assetEndpoint}/bundle/available?os={os}";
+
+        using (UnityWebRequest assetMetaDataRequest = UnityWebRequest.Get(url))
+        {
+            yield return assetMetaDataRequest.SendWebRequest();
+
+            if (assetMetaDataRequest.result == UnityWebRequest.Result.Success)
+            {
+                string jsonResponse = assetMetaDataRequest.downloadHandler.text;
+
+                List<AssetBundleMeta> items = JsonConvert.DeserializeObject<List<AssetBundleMeta>>(jsonResponse);
+                if (items != null)
+                {
+                    onSuccess?.Invoke(items);
+                }
+                else
+                {
+                    
+                }
+            }
+            else
+            {
+                //실패 시 에러 콜백 호출
+                Debug.LogError("메시지 수신 실패: " + assetMetaDataRequest.error);
+                onError?.Invoke(assetMetaDataRequest.error);
+            }
+        }
+    }
+
+    [Serializable]
+    public class BundleClientSigned
+    {
+        public LayoutRoot layoutJson;
+        public List<string> urls;
+    }
+
+    public void DownLoadAsset(string id, Action<BundleClientSigned> onSuccess, Action<string> onError)
+    {
+        StartCoroutine(DownLoadAssetCoroutine(id, onSuccess, onError));
+    }
+
+    private IEnumerator DownLoadAssetCoroutine(string id, Action<BundleClientSigned> onSuccess, Action<string> onError)
+    {
+        string url = $"{assetEndpoint}/bundle/?id={id}";
+        
+        using (UnityWebRequest bundlePresignedRequest = UnityWebRequest.Get(url))
+        {
+            yield return bundlePresignedRequest.SendWebRequest();
+
+            if (bundlePresignedRequest.result == UnityWebRequest.Result.Success)
+            {
+                string jsonResponse = bundlePresignedRequest.downloadHandler.text;
+                Debug.Log(jsonResponse);
+
+                BundleClientSigned item = JsonConvert.DeserializeObject<BundleClientSigned>(jsonResponse);
+                if (item != null)
+                {
+                    onSuccess?.Invoke(item);
+                }
+                else
+                {
+                    onError?.Invoke(bundlePresignedRequest.error);
+                }
+            }
+            else
+            {
+                //실패 시 에러 콜백 호출
+                Debug.LogError("메시지 수신 실패: " + bundlePresignedRequest.error);
+                onError?.Invoke(bundlePresignedRequest.error);
             }
         }
     }
