@@ -8,7 +8,7 @@ using UnityEngine;
 [Serializable] public class TransformData { public LocationData location; public Rotation rotation; public Scale scale; }
 
 // 필요 타입들 (프로젝트에 이미 있다면 이 블록은 생략)
-[Serializable] public class LayoutRoot { public string bundleId; public PrefabInfo[] prefabs; public PlacementGroup[] placementGroups; }
+[Serializable] public class LayoutRoot { public string bundleId; public string name; public PrefabInfo[] prefabs; public PlacementGroup[] placementGroups; }
 [Serializable] public class Rotation { public float x; public float y; public float z; }
 [Serializable] public class Scale { public float x; public float y; public float z; }
 

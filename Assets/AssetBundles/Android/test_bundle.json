@@ -1,6 +1,14 @@
 {
   "bundleId": "test_bundle",
-  "bundleUrl": "https://cdn.example.com/bundles/android/bundle_test.assetbundle",
+  "name": "Jeju_Heritage_Assets",
+  "os": "android",
+  "version": "1.0.0",
+  "usage": "both",
+  "updatedAt": "2025-09-18T12:30:00Z",
+  "totalSizeMB": 107.2,
+  "tags": ["generated", "heritage", "sample"],
+  "description": "제주 문화유산 관련 에셋 번들 예시 데이터",
+  "mainLocation": { "latitude": 35.1869, "longitude": 129.074000, "altitude": -2 },
   "prefabs": [
     {
       "id": "prefab-001",
@@ -40,14 +48,5 @@
       ],
       "active": false
     }
-  ],
-  "name": "Jeju Heritage Assets",
-  "version": "1.0.0",
-  "status": "published",
-  "usage": "both",
-  "os": "android",
-  "updatedAt": "2025-09-18T12:30:00Z",
-  "totalSizeMB": 107.2,
-  "tags": ["generated", "heritage", "sample"],
-  "description": "제주 문화유산 관련 에셋 번들 예시 데이터"
+  ]
 }

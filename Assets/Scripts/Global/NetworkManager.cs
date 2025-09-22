@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
@@ -33,7 +32,8 @@ public class NetworkManager : MonoBehaviour
     private static string baseUrl = "http://192.168.0.14:3000";
     private string healthCheckEndpoint = $"{baseUrl}/health"; // NestJS Health Check 주소
     private string bucketEndpoint = $"{baseUrl}/s3";
-    private string messagesEndpoint => $"{baseUrl}/echo"; // 메시지 전송 API 주소
+    private string messagesEndpoint = $"{baseUrl}/echo"; // 메시지 전송 API 주소
+    private string assetEndpoint = $"{baseUrl}/unity"; // 에셋 관련 API
 
     // --- DTOs ---
     [Serializable] private class PresignReq { public string filename; public string contentType; }
@@ -196,8 +196,6 @@ public class NetworkManager : MonoBehaviour
             {
                 string jsonResponse = webRequest.downloadHandler.text;
 
-                // Unity의 JsonUtility는 JSON 배열 [ ... ]을 직접 파싱하지 못하므로,
-                // { "messages": [ ... ] } 형태의 JSON을 파싱하기 위해 래퍼 클래스(MessageList)를 사용합니다.
                 List<MessageData> messages = JsonConvert.DeserializeObject<List<MessageData>>(jsonResponse);
 
                 if (messages != null)
@@ -260,6 +258,86 @@ public class NetworkManager : MonoBehaviour
         else
         {
             onError?.Invoke("Failed");
+        }
+    }
+
+    public void GetAssetMetaData(string os, Action<List<AssetBundleMeta>> onSuccess, Action<string> onError)
+    {
+        StartCoroutine(GetAssetMetaCoroutine(os, onSuccess, onError));
+    }
+
+    private IEnumerator GetAssetMetaCoroutine(string os, Action<List<AssetBundleMeta>> onSuccess, Action<string> onError)
+    {
+        string url = $"{assetEndpoint}/bundle/available?os={os}";
+
+        using (UnityWebRequest assetMetaDataRequest = UnityWebRequest.Get(url))
+        {
+            yield return assetMetaDataRequest.SendWebRequest();
+
+            if (assetMetaDataRequest.result == UnityWebRequest.Result.Success)
+            {
+                string jsonResponse = assetMetaDataRequest.downloadHandler.text;
+
+                List<AssetBundleMeta> items = JsonConvert.DeserializeObject<List<AssetBundleMeta>>(jsonResponse);
+                if (items != null)
+                {
+                    onSuccess?.Invoke(items);
+                }
+                else
+                {
+                    
+                }
+            }
+            else
+            {
+                //실패 시 에러 콜백 호출
+                Debug.LogError("메시지 수신 실패: " + assetMetaDataRequest.error);
+                onError?.Invoke(assetMetaDataRequest.error);
+            }
+        }
+    }
+
+    [Serializable]
+    public class BundleClientSigned
+    {
+        public LayoutRoot layoutJson;
+        public List<string> urls;
+    }
+
+    public void DownLoadAsset(string id, Action<BundleClientSigned> onSuccess, Action<string> onError)
+    {
+        StartCoroutine(DownLoadAssetCoroutine(id, onSuccess, onError));
+    }
+
+    private IEnumerator DownLoadAssetCoroutine(string id, Action<BundleClientSigned> onSuccess, Action<string> onError)
+    {
+        string url = $"{assetEndpoint}/bundle/?id={id}";
+        
+        using (UnityWebRequest bundlePresignedRequest = UnityWebRequest.Get(url))
+        {
+            yield return bundlePresignedRequest.SendWebRequest();
+
+            if (bundlePresignedRequest.result == UnityWebRequest.Result.Success)
+            {
+                string jsonResponse = bundlePresignedRequest.downloadHandler.text;
+                Debug.Log(jsonResponse);
+
+                BundleClientSigned item = JsonConvert.DeserializeObject<BundleClientSigned>(jsonResponse);
+                if (item != null)
+                {
+                    onSuccess?.Invoke(item);
+                }
+                else
+                {
+                    onError?.Invoke(bundlePresignedRequest.error);
+                }
+            }
+            else
+            {
+                //실패 시 에러 콜백 호출
+                Debug.LogError("메시지 수신 실패: " + bundlePresignedRequest.error);
+                onError?.Invoke(bundlePresignedRequest.error);
+            }
         }
     }
 }
