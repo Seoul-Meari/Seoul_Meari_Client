@@ -52,11 +52,3 @@ public class MessageData : System.IEquatable<MessageData>
 
     public override int GetHashCode() => id?.GetHashCode() ?? base.GetHashCode();
 }
-
-// MessageData를 감싸기 위한 Wrapper 클래스
-// GET API 호출 시 사용
-[System.Serializable]
-public class MessageList
-{
-    public List<MessageData> messages;
-}

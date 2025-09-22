@@ -22,7 +22,7 @@ public class MessageInfo : MonoBehaviour
     public void Setup(MessageData data)
     {
         _contentText.text = MessageColoring.MessageWithColor(data.content, "#000000");
-        _writer.text = MessageColoring.MessageWithColor(data.writer, "#000000");
+        _writer.text = MessageColoring.MessageWithColor($"GPS {data.location.latitude} , {data.location.longitude}", "#000000");
         _createdAt.text = MessageColoring.MessageWithColor(TimeFormatter.ToRelativeTime(data.createdAt), "#000000");
         if (data.image != null)
         {

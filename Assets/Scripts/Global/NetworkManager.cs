@@ -34,6 +34,7 @@ public class NetworkManager : MonoBehaviour
     private string bucketEndpoint = $"{baseUrl}/s3";
     private string messagesEndpoint = $"{baseUrl}/echo"; // 메시지 전송 API 주소
     private string assetEndpoint = $"{baseUrl}/unity"; // 에셋 관련 API
+    private string docentEndpoint = $"{baseUrl}/docent"; // 에셋 관련 API
 
     // --- DTOs ---
     [Serializable] private class PresignReq { public string filename; public string contentType; }
@@ -96,9 +97,9 @@ public class NetworkManager : MonoBehaviour
     private IEnumerator PostMessageCoroutine(MessageData data)
     {
         string imageKey;
-        byte[] pngBytes = data.image.EncodeToPNG();
-        string imageFilename = Guid.NewGuid().ToString() + ".png";
-        string imageContentType = "image/png";
+        byte[] jpgBytes = data.image.EncodeToJPG();
+        string imageFilename = Guid.NewGuid().ToString() + ".jpg";
+        string imageContentType = "image/jpeg";
 
 
 
@@ -128,7 +129,7 @@ public class NetworkManager : MonoBehaviour
             // 1-2) S3 PUT 업로드 (Content-Type 반드시 일치)
             using (UnityWebRequest putRequest = new UnityWebRequest(presignRes.url, UnityWebRequest.kHttpVerbPUT))
             {
-                putRequest.uploadHandler = new UploadHandlerRaw(pngBytes);
+                putRequest.uploadHandler = new UploadHandlerRaw(jpgBytes);
                 putRequest.downloadHandler = new DownloadHandlerBuffer();
                 putRequest.SetRequestHeader("Content-Type", imageContentType);
                 yield return putRequest.SendWebRequest();
@@ -285,7 +286,7 @@ public class NetworkManager : MonoBehaviour
                 }
                 else
                 {
-                    
+
                 }
             }
             else
@@ -312,7 +313,7 @@ public class NetworkManager : MonoBehaviour
     private IEnumerator DownLoadAssetCoroutine(string id, Action<BundleClientSigned> onSuccess, Action<string> onError)
     {
         string url = $"{assetEndpoint}/bundle/?id={id}";
-        
+
         using (UnityWebRequest bundlePresignedRequest = UnityWebRequest.Get(url))
         {
             yield return bundlePresignedRequest.SendWebRequest();
@@ -337,6 +338,37 @@ public class NetworkManager : MonoBehaviour
                 //실패 시 에러 콜백 호출
                 Debug.LogError("메시지 수신 실패: " + bundlePresignedRequest.error);
                 onError?.Invoke(bundlePresignedRequest.error);
+            }
+        }
+    }
+
+    public void PostDocent(DocentData data)
+    {
+        StartCoroutine(PostDocentCoroutine(data));
+    }
+
+    private IEnumerator PostDocentCoroutine(DocentData data)
+    {
+        string json = JsonUtility.ToJson(data);
+        string url = $"{docentEndpoint}/question";
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+        
+        using (UnityWebRequest webRequest = new UnityWebRequest(url, "POST"))
+        {
+            webRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            webRequest.downloadHandler = new DownloadHandlerBuffer();
+            webRequest.SetRequestHeader("Content-Type", "application/json");
+
+            // 4. 요청 전송
+            yield return webRequest.SendWebRequest();
+
+            if (webRequest.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log("Message sent successfully! Response: " + webRequest.downloadHandler.text);
+            }
+            else
+            {
+                Debug.LogError("Failed to send message: " + webRequest.error);
             }
         }
     }
