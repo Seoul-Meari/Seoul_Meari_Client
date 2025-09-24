@@ -23,7 +23,6 @@ public class ARBackgroundOnlyCapture : MonoBehaviour
     [Range(1,100)] [SerializeField] private int jpegQuality = 80;
 
     [Header("IO")]
-    [SerializeField] private string customFolder = "";
     [SerializeField] private int maxConcurrentSaves = 1;
 
     private float _nextTime;
@@ -72,9 +71,7 @@ public class ARBackgroundOnlyCapture : MonoBehaviour
 
         // 저장 (백그라운드)
         _inflightSaves++;
-        string dir = string.IsNullOrEmpty(customFolder)
-            ? Path.Combine(Application.persistentDataPath, "Screenshots")
-            : customFolder;
+        string dir = ScreenShotConfig.screenshotFolderPath;
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
         string ext = useJpeg ? "jpg" : "png";
@@ -83,7 +80,6 @@ public class ARBackgroundOnlyCapture : MonoBehaviour
         Task.Run(() => File.WriteAllBytes(file, bytes))
             .ContinueWith(_ =>
             {
-                Debug.Log($"✅ AR 배경 캡처 저장 완료: {file}");
                 _inflightSaves--;
             }, TaskScheduler.FromCurrentSynchronizationContext());
     }

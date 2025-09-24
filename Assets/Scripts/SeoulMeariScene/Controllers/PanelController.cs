@@ -25,6 +25,7 @@ public class PanelController : MonoBehaviour
             Panel.SetActive(true);
             MessageCreateButton.SetActive(false);
             DocentButton.SetActive(false);
+            PipelineController.Instance.StartYoloPipeline();
         }
     }
 }

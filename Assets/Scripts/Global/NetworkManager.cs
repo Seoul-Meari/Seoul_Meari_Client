@@ -28,13 +28,18 @@ public class NetworkManager : MonoBehaviour
     }
 
     // --- REST API ---
-    // private static string baseUrl = "http://54.153.21.98";
+    // private static string baseUrl = "http://52.53.232.247:3000";
     private static string baseUrl = "http://192.168.0.14:3000";
     private string healthCheckEndpoint = $"{baseUrl}/health"; // NestJS Health Check 주소
     private string bucketEndpoint = $"{baseUrl}/s3";
     private string messagesEndpoint = $"{baseUrl}/echo"; // 메시지 전송 API 주소
     private string assetEndpoint = $"{baseUrl}/unity"; // 에셋 관련 API
     private string docentEndpoint = $"{baseUrl}/docent"; // 에셋 관련 API
+
+    public string get_baseUrl()
+    {
+        return baseUrl;
+    }
 
     // --- DTOs ---
     [Serializable] private class PresignReq { public string filename; public string contentType; }
@@ -342,33 +347,30 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-    public void PostDocent(DocentData data)
+    public void PostDocent(WWWForm data, Action<DocentRes> onSuccess, Action<string> onError)
     {
-        StartCoroutine(PostDocentCoroutine(data));
+        StartCoroutine(PostDocentCoroutine(data, onSuccess, onError));
     }
 
-    private IEnumerator PostDocentCoroutine(DocentData data)
+    private IEnumerator PostDocentCoroutine(WWWForm data, Action<DocentRes> onSuccess, Action<string> onError)
     {
-        string json = JsonUtility.ToJson(data);
         string url = $"{docentEndpoint}/question";
-        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
         
-        using (UnityWebRequest webRequest = new UnityWebRequest(url, "POST"))
+        using (UnityWebRequest webRequest = UnityWebRequest.Post(url, data))
         {
-            webRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            webRequest.downloadHandler = new DownloadHandlerBuffer();
-            webRequest.SetRequestHeader("Content-Type", "application/json");
-
-            // 4. 요청 전송
             yield return webRequest.SendWebRequest();
 
             if (webRequest.result == UnityWebRequest.Result.Success)
             {
-                Debug.Log("Message sent successfully! Response: " + webRequest.downloadHandler.text);
+                string jsonResponse = webRequest.downloadHandler.text;
+                Debug.Log("Message sent successfully! Response: " + jsonResponse);
+                DocentRes response = JsonConvert.DeserializeObject<DocentRes>(jsonResponse);
+                onSuccess.Invoke(response);
             }
             else
             {
                 Debug.LogError("Failed to send message: " + webRequest.error);
+                onError.Invoke(webRequest.error);
             }
         }
     }
