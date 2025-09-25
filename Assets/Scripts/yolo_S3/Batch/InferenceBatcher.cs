@@ -105,7 +105,7 @@ public class InferenceBatcher
         // 2) presigned URL 묶음 요청 (서버 명세: POST /s3/presigned-urls/analysis)
         var reqFiles = new List<FileItem>();
         foreach (var c in candidates)
-            reqFiles.Add(new FileItem { originalFilename = c.originalFilename, objectName = c.objectName });
+            reqFiles.Add(new FileItem { originalFilename = c.originalFilename, objectName = c.objectName, contentType = c.contentType });
 
         List<PresignedInfo> presigned = null;
         string presignErr = null;

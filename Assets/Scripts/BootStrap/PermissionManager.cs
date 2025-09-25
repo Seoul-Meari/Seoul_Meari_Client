@@ -122,7 +122,7 @@ public class PermissionManager : MonoBehaviour
         Debug.Log($"[Location] Ready. lat={Input.location.lastData.latitude}, lon={Input.location.lastData.longitude}");
         callback(true);
     }
-    
+
     private IEnumerator EnsureCameraPermission(Action<bool> callback)
     {
 #if UNITY_EDITOR
@@ -170,6 +170,7 @@ public class PermissionManager : MonoBehaviour
         else Debug.LogError("[Camera] Permission denied.");
 
         callback?.Invoke(isGranted);
+        yield break;
     }
 
     /// <summary>

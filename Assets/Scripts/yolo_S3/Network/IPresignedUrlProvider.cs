@@ -12,7 +12,7 @@ public interface IPresignedUrlProvider
 }
 
 // 요청/응답 모델 (서버 명세에 정확히 맞춤)
-[System.Serializable] public class FileItem { public string originalFilename; public string objectName; }
+[System.Serializable] public class FileItem { public string originalFilename; public string objectName; public string contentType; }
 [System.Serializable] public class PresignBulkRequest { public List<FileItem> files; }
 
 [System.Serializable] public class PresignedInfo { public string url; public string key; }
