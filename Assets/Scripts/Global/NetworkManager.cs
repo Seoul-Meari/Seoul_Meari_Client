@@ -28,7 +28,7 @@ public class NetworkManager : MonoBehaviour
     }
 
     // --- REST API ---
-    private static string baseUrl = "http://13.57.38.28";
+    private static string baseUrl = "http://13.57.38.28/api";
     // private static string baseUrl = "http://192.168.0.14:3000";
     private string healthCheckEndpoint = $"{baseUrl}/health"; // NestJS Health Check 주소
     private string bucketEndpoint = $"{baseUrl}/s3";
