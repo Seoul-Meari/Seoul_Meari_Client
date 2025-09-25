@@ -64,6 +64,8 @@ public class GpsService : MonoBehaviour
             0 //Input.location.lastData.altitude
         );
 
+        Debug.Log("GPS: " + rawPosition.x + ", " + rawPosition.y + ", " + rawPosition.z);
+
         CurrentPosition = isFirstUpdate 
             ? rawPosition 
             : Vector3.Lerp(CurrentPosition, rawPosition, smoothingFactor);

@@ -7,10 +7,9 @@ public class PipelineController : MonoBehaviour
 {
     [Header("Model / Detector (same GameObject)")]
     public ObjectDetector detector;    // 같은 오브젝트에 붙인 ObjectDetector 참조
-    public string arSavedFolderRelative = "ARPhotos"; // AR팀 저장 폴더 (기본)
 
     [Header("Presign / Upload")]
-    public string apiBaseUrl;                // 예: https://your-nest-server.com
+    public string apiBaseUrl;             // 예: https://your-nest-server.com
     public string analysisEndpoint = "/s3/presigned-urls/analysis";
     [Tooltip("image/jpeg 권장")]
     public string defaultContentType = "image/jpeg";
@@ -33,6 +32,8 @@ public class PipelineController : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        apiBaseUrl = NetworkManager.Instance.get_baseUrl();
+
         if (detector == null) detector = GetComponent<ObjectDetector>();
 
         photoRepo = new PhotoRepository();
@@ -49,14 +50,14 @@ public class PipelineController : MonoBehaviour
     }
 
     // AR 씬에서 종료 시점에 호출:
-    public void OnArSessionEnded(string absoluteFolderPath = null)
+    public void StartYoloPipeline()
     {
-        string folder = absoluteFolderPath;
-        if (string.IsNullOrEmpty(folder))
-            folder = System.IO.Path.Combine(Application.persistentDataPath, arSavedFolderRelative);
+        string folder = ScreenShotConfig.screenshotFolderPath;
 
         StartCoroutine(batcher.RunBatch(folder, OnBatchUploaded));
     }
+
+
 
     // presign 응답에서 받은 key들 전달 (FastAPI 등으로 넘길 때 사용)
     private void OnBatchUploaded(List<string> uploadedKeys)

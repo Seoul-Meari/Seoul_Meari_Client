@@ -39,4 +39,4 @@ Assets/StreamingAssets/config.local.json
 .DS_Store?
 ._*
 .Spotlight-V100
-.Trashes
+.Trashes*.symbols.zip

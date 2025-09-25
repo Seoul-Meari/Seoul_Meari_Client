@@ -88,19 +88,13 @@ public class Bootstrapper : MonoBehaviour
         }
         yield return StartCoroutine(messageCache.InitiateMessage(nowPos));
 
+        //실행시 욜로 한 번 실행
+        PipelineController.Instance.StartYoloPipeline();
+
         // 5) 메인 씬 로드
         Debug.Log("All checks passed. Loading main scene...");
         var mode = loadAdditively ? LoadSceneMode.Additive : LoadSceneMode.Single;
-        AsyncOperation op = SceneManager.LoadSceneAsync(firstSceneName, mode);
-        op.allowSceneActivation = false;
-
-        while (op.progress < 0.9f)
-        {
-            yield return null;
-        }
-
-        op.allowSceneActivation = true;
-        yield return null;
+        SceneManager.LoadScene(firstSceneName, mode);
 
         // 6) 로딩 UI 끄기
         UIManager.Instance.ShowLoading(false);
