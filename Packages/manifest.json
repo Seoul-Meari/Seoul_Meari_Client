@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.cesium.unity": "1.18.0",
+    "com.cesium.unity": "file:../package",
     "com.nobi.roundedcorners": "https://github.com/kirevdokimov/Unity-UI-Rounded-Corners.git",
     "com.unity.collab-proxy": "2.9.3",
     "com.unity.feature.development": "1.0.1",
