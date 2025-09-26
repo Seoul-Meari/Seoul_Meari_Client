@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Scene Table Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: Scene Table
+  m_TableCollectionNameGuidString: 52fbbddbaaecb442baae63ff560faf6e
+  m_Entries:
+  - m_Id: 1701221228544
+    m_Key: Global Main
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2559048671232
+    m_Key: Meari Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1845127798784
+    m_Key: Meari Docent
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2233331605504
+    m_Key: Meari Explain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1466709303296
+    m_Key: Meari Leave Echo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2492615090176
+    m_Key: Meari Send
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2092377825280
+    m_Key: Meari Share
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6608519159808
+    m_Key: Travel Asset Store
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21727806480384
+    m_Key: Meari Reset
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 6059461950757666908
+  references:
+    version: 2
+    RefIds:
+    - rid: 6059461950757666908
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1758871367920
