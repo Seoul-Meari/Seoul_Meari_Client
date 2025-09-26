@@ -69,13 +69,52 @@ public class ARBackgroundOnlyCapture : MonoBehaviour
             ? _reuseTex.EncodeToJPG(Mathf.Clamp(jpegQuality, 1, 100))
             : _reuseTex.EncodeToPNG();
 
+        if (useJpeg)
+        {
+            var nowIso = System.DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            string device = SystemInfo.deviceModel;
+            // 가능하면 위치 정보
+            string latStr = "", lonStr = "";
+            if (Input.location.status == LocationServiceStatus.Running)
+            {
+                var last = Input.location.lastData;
+                latStr = last.latitude.ToString("F7", System.Globalization.CultureInfo.InvariantCulture);
+                lonStr = last.longitude.ToString("F7", System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            string xmp = XmpBuilder.BuildSimpleXmp(
+                description: "AR Background capture",
+                createDateIso8601: nowIso,
+                deviceModel: device,
+                latitude: latStr,
+                longitude: lonStr
+            );
+
+            bytes = JpegXmpInjector.InjectXmp(bytes, xmp);
+        }
+
         // 저장 (백그라운드)
         _inflightSaves++;
         string dir = ScreenShotConfig.screenshotFolderPath;
         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
         string ext = useJpeg ? "jpg" : "png";
-        string file = Path.Combine(dir, $"AR_BG_{System.DateTime.Now:yyyy-MM-dd_HH-mm-ss}.{ext}");
+
+        string fileName;
+        if (Input.location.status == LocationServiceStatus.Running)
+        {
+            var last = Input.location.lastData;
+            string latStr = last.latitude.ToString("F5", System.Globalization.CultureInfo.InvariantCulture);
+            string lonStr = last.longitude.ToString("F5", System.Globalization.CultureInfo.InvariantCulture);
+            fileName = $"AR_BG_{latStr}_{lonStr}.{ext}";
+        }
+        else
+        {
+            // 위치를 못 가져온 경우 fallback: 날짜 기반
+            fileName = $"AR_BG_{System.DateTime.Now:yyyy-MM-dd_HH-mm-ss}.{ext}";
+        }
+
+        string file = Path.Combine(dir, fileName);
 
         Task.Run(() => File.WriteAllBytes(file, bytes))
             .ContinueWith(_ =>
