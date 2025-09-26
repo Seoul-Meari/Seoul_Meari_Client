@@ -28,6 +28,12 @@ public class Bootstrapper : MonoBehaviour
     private IEnumerator Start()
     {
         // 필수 매니저 존재 여부 확인
+        if (LanguageManager.Instance == null)
+        {
+            Debug.LogError("LanguageManager instance not found. Please add them to the scene.");
+            yield break;
+        }
+
         if (UIManager.Instance == null || PermissionManager.Instance == null)
         {
             Debug.LogError("UIManager or PermissionManager instance not found. Please add them to the scene.");

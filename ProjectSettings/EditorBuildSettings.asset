@@ -21,6 +21,8 @@ EditorBuildSettings:
     Niantic.Lightship.AR.LightshipSettings: {fileID: 11400000, guid: 6867876b111fc406aaa448f5fd49b67f, type: 2}
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 22cd6af2ae6c24210b7ae7f7e5dfb3ba, type: 2}
     UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: 670d483f7839f4763aa5bace479972e5, type: 2}
+    com.unity.addressableassets: {fileID: 11400000, guid: 358d3aa77aa2e4c57b2f750c7c882eb1, type: 2}
+    com.unity.localization.settings: {fileID: 11400000, guid: 1317f28cf206e4affbb2016667b1f068, type: 2}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 3a3bb7a7e8bd44ce28d602dcd685e281, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 276d55e5ce3784fd9989c8fc6b324c7f, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 3f26b4dcbb11446a19acec2d1a1ac100, type: 2}

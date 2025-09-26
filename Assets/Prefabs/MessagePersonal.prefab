@@ -597,6 +597,7 @@ GameObject:
   - component: {fileID: 8341809504759338237}
   - component: {fileID: 2448655108343966649}
   - component: {fileID: -3435166374614599683}
+  - component: {fileID: 1807929183545647239}
   m_Layer: 5
   m_Name: MessagePersonal
   m_TagString: Untagged
@@ -757,6 +758,42 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1807929183545647239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4692428974904918296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69beb381e244f92449b8c4cf954630e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TrackedObjects:
+  - rid: 6059461950757666944
+  references:
+    version: 2
+    RefIds:
+    - rid: 6059461950757666944
+      type: {class: TrackedMonoBehaviourObject, ns: UnityEngine.Localization.PropertyVariants.TrackedObjects, asm: Unity.Localization}
+      data:
+        m_Target: {fileID: 7088158645299425697}
+        m_TrackedProperties:
+          items:
+          - rid: 6059461950757666945
+        m_UpdateType: 0
+        m_Changed:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6059461950757666945
+      type: {class: BoolTrackedProperty, ns: UnityEngine.Localization.PropertyVariants.TrackedProperties, asm: Unity.Localization}
+      data:
+        m_PropertyPath: m_PresetInfoIsWorld
+        m_VariantData:
+        - localeIdentifier:
+            m_Code: ja
+          value: 0
 --- !u!1 &5795810222547020938
 GameObject:
   m_ObjectHideFlags: 0

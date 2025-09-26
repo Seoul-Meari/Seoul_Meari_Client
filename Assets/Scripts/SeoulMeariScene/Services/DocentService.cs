@@ -10,6 +10,8 @@ public class DocentService : MonoBehaviour
     [SerializeField] private GameObject picture;
     [SerializeField] private GameObject messageImageObject;
     [SerializeField] private GameObject cameraIcon;
+    [SerializeField] private GameObject messageTransferButton;
+    [SerializeField] private GameObject messageResetButton;
     [SerializeField] private TextMeshProUGUI questionTMP;
     [SerializeField] private GameObject LoadingObject;
     [SerializeField] private TextMeshProUGUI answerTMP;
@@ -22,7 +24,7 @@ public class DocentService : MonoBehaviour
         messageImage = messageImageObject.GetComponent<RawImage>();
         questionInput = questionInputObject.GetComponent<TMP_InputField>();
     }
-    public void DocentControl()
+    public void DocentSendControl()
     {
         SendDocentToAI();
         SetDocentUI();
@@ -48,18 +50,21 @@ public class DocentService : MonoBehaviour
             docentForm.AddField("question", question);
 
             DocentRes docentResponse;
+            messageTransferButton.SetActive(false);
             LoadingObject.SetActive(true);
             NetworkManager.Instance.PostDocent(
                 docentForm,
                 onSuccess: docentNetworkResponse =>
                 {
                     LoadingObject.SetActive(false);
+                    messageResetButton.SetActive(true);
                     docentResponse = docentNetworkResponse;
                     answerTMP.text = docentResponse.answer;
                 },
                 onError: err =>
                 {
                     LoadingObject.SetActive(false);
+                    messageResetButton.SetActive(true);
                     Debug.Log("Docent Error" + err);
                 }
             );
@@ -74,11 +79,16 @@ public class DocentService : MonoBehaviour
         questionInput.text = "";
     }
 
-    public void ReSetMessage()
+    public void ResetMessage()
     {
-        questionInput.text = "";
         messageImage.texture = null;
+        messageResetButton.SetActive(false);
         messageImageObject.SetActive(false);
+        questionTMP.text = "";
+        answerTMP.text = "";
+        picture.SetActive(true);
+        questionInputObject.SetActive(true);
+        messageTransferButton.SetActive(true);
         cameraIcon.SetActive(true);
     }
 }
