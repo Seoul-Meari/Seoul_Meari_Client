@@ -12,6 +12,9 @@
 *.exe
 *.dylib
 
+# Unity StreamingAssets 환경변수
+Assets/StreamingAssets/config.local.json
+
 # Visual Studio / Rider
 /[Ee]xported[Oo]bj/
 .vs/
@@ -36,4 +39,4 @@
 .DS_Store?
 ._*
 .Spotlight-V100
-.Trashes
+.Trashes*.symbols.zip
